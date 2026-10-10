@@ -64,11 +64,11 @@ Udumalpet–Palladam belt about 10.6N 77.25E; Theni/Cumbum belt about 9.75N 77.3
 2. **Feature contract.** Model inputs are ONLY: daily mean wind speed, daily mean temperature, daily mean humidity
    (relative humidity `hurs` as the common variable), plus lagged generation / capacity factor, plus calendar terms
    (day-of-year sine/cosine). **Pressure is forbidden** because it does not exist in the climate data.
-3. **Target.** Capacity factor if capacity data is available; otherwise detrended generation. Never raw MU across years without a trend check.
+3. **Target.** Capacity factor if yearly Tamil Nadu installed capacity is found by Day 3; otherwise `generation_mu` directly. **No detrending by year** (it would remove real wind-year variability; yearly means 2021–2024 show little capacity trend). Decided at G0, 2026-10-10.
 4. **Validation is time-based.** Walk-forward or chronological split. **Never a random split.** No shuffling. No leakage
    from future rows into features.
 5. **Always compare against persistence** (yesterday's value). A model that does not beat persistence is not reported as good.
-6. **Climate coupling method.** Primary: **delta-change** — compute each climate model's change between a 1995–2014 baseline and
+6. **Climate coupling method.** Primary: **delta-change**, computed **monthly** (12 factors per climate model / scenario / window; wind = ratio future/baseline, temperature and humidity = additive difference). Annual rows (`month` NULL) kept for summaries only. Direct daily NEX-GDDP feed is NOT stored for now (revisit in week 2). Method detail: — compute each climate model's change between a 1995–2014 baseline and
    2030 / 2050 windows (about 20-year windows), apply that change to ERA5 weather, feed the trained model.
    Secondary check: feed NEX-GDDP values directly and compare. Report the **spread across climate models** as the uncertainty.
 7. **Shift diagnostic.** Report the share of future days whose features fall outside the training range
@@ -78,22 +78,24 @@ Udumalpet–Palladam belt about 10.6N 77.25E; Theni/Cumbum belt about 9.75N 77.3
    fresh clone. Pin dependencies. Seeds fixed.
 10. **Schema is frozen after G0.** Changes need a PR approved by the other person and an update to this file.
 
-## 6. Database contract (DRAFT, frozen at G0 — Pavan owns the final DDL)
+## 6. Database contract (FROZEN at G0 on 2026-10-10 — DDL in `db/init/`, details in `db/README.md`)
 
-Daily grain. A "station" is a region record; for this project one row represents the Tamil Nadu wind belts.
+Daily grain. Units: wind m/s at 10 m, temperature deg C, humidity % RH, generation MU/day.
 
-| Table | Columns |
-| --- | --- |
-| `stations` | `station_id` PK, `name`, `latitude`, `longitude`, `region` |
-| `raw_weather_readings` | `reading_id` PK, `station_id` FK, `ts` (date), `wind_speed`, `temperature`, `humidity`, `pressure` (nullable, unused) |
-| `power_output` | `output_id` PK, `station_id` FK, `ts` (date), `generation_mu`, `capacity_mw` (nullable), `capacity_factor` (nullable) |
-| `climate_scenarios` | `scenario_id` PK, `name` (ssp245/ssp585), `target_year`, `climate_model`, `station_id` FK, `projected_wind_speed`, `projected_temperature`, `projected_humidity` |
-| `forecast_runs` | `run_id` PK, `model_version`, `run_timestamp`, `horizon_days` |
-| `model_predictions` | `prediction_id` PK, `run_id` FK, `station_id` FK, `forecast_date`, `predicted_value`, `lower`, `upper` |
-| `climate_impact` | `region`, `scenario`, `target_year`, `climate_model`, `metric`, `value`, `p10`, `p90` |
+| Table | Key | Columns |
+| --- | --- | --- |
+| `stations` | `station_id` | `name`, `kind` (`state_aggregate` / `weather_point`), `latitude`, `longitude`, `region`. ID 1 = TN_STATE; 2–4 = wind-belt points |
+| `raw_weather_readings` (hypertable) | (`station_id`, `ts`) | `wind_speed`, `temperature`, `humidity`, `pressure` (nullable, never a model input), `n_hours`, `source`, `ingested_at` |
+| `power_output` (hypertable) | (`station_id`, `ts`) | `generation_mu` (NULL = missing CEA day), `capacity_mw`, `capacity_factor`, `source`, `ingested_at` |
+| `climate_scenarios` | `scenario_id`; unique (`name`, `target_year`, `month`, `climate_model`, `station_id`) | `name` (`historical` / `ssp245` / `ssp585`), `target_year`, `window_start`, `window_end`, `month` (NULL = annual), `projected_wind_speed`, `projected_temperature`, `projected_humidity` |
+| `forecast_runs` | `run_id` | `model_version`, `run_timestamp`, `horizon_days` (1–3), `params` (JSONB: seed, features, train window) |
+| `model_predictions` | `prediction_id`; unique (`run_id`, `station_id`, `forecast_date`) | `predicted_value`, `lower`, `upper` |
+| `climate_impact` | `impact_id`; unique (`region`, `scenario`, `target_year`, `climate_model`, `metric`) | `value`, `p10`, `p90`. Shape frozen at G3 |
 
-Indexes: composite `(station_id, ts)` on time-series tables; TimescaleDB hypertables on weather and power tables.
-Materialized views provide daily/weekly aggregates the model reads. **Models read from views, not raw tables, from Gate G2 on.**
+Model input: **`mv_daily_features`** — one row per day per region: mean of the 3 wind-belt points (`wind_speed`, `temperature`,
+`humidity`, `n_points`) LEFT JOINed to TN_STATE `generation_mu`, `capacity_mw`, `capacity_factor`. Missing generation stays NULL;
+weather days outside the CEA range also have NULL generation, so filter on it. `mv_weekly_features` gives weekly means.
+**Models read views, not raw tables, from Gate G2 on.** Lags and calendar terms are built in model code.
 
 ## 7. Repo layout
 
