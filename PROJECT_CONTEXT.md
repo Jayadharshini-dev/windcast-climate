@@ -95,6 +95,10 @@ Daily grain. Units: wind m/s at 10 m, temperature deg C, humidity % RH, generati
 Model input: **`mv_daily_features`** — one row per day per region: mean of the 3 wind-belt points (`wind_speed`, `temperature`,
 `humidity`, `n_points`) LEFT JOINed to TN_STATE `generation_mu`, `capacity_mw`, `capacity_factor`. Missing generation stays NULL;
 weather days outside the CEA range also have NULL generation, so filter on it. `mv_weekly_features` gives weekly means.
+Climate change factors (migration `db/migrations/001_change_factors.sql`, views only, no table changes):
+`v_change_factors` (per weather point) and `v_change_factors_region` (state level = ratio/difference of the point means),
+monthly, per climate model: wind ratio, temperature and humidity additive, each future window vs that model's own 1995-2014 baseline.
+Climate ensemble: 10 models (provisional list in `etl/fetch_nexgddp.py`), windows 2021-2040 (2030) and 2041-2060 (2050), data via Google Earth Engine.
 **Models read views, not raw tables, from Gate G2 on.** Lags and calendar terms are built in model code.
 
 ## 7. Repo layout
