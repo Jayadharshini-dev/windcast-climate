@@ -76,6 +76,6 @@ def test_values_are_physically_plausible(df):
     assert (df["generation_mu"].dropna() >= 0).all()
 
 
-def test_unknown_region_gives_a_clear_error():
+def test_unknown_region_gives_a_clear_error(df):  # df fixture: skips this test too if the database is down
     with pytest.raises(ValueError, match="no rows"):
         read_features(region="Atlantis")
