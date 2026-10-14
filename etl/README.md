@@ -34,6 +34,29 @@ safe, because rows are upserted, not duplicated.
 - **Weather range 2020-05-01 → 2025-04-30**: the CEA span plus a margin for lag features.
 - `capacity_mw` / `capacity_factor` are left NULL until yearly TN capacity data is found (Phase 3).
 
+## Reading data in model code (gate G2)
+
+```python
+from etl.features import read_features
+
+df = read_features()                          # every day in the span
+train = read_features(require_generation=True)  # only days with a generation value
+sub = read_features(start="2021-01-01", end="2023-12-31")
+```
+
+Run from the repo root so `etl` is importable. The connection comes from `DATABASE_URL` or `.env`
+(see `etl/db.py`); with the default docker-compose it is `localhost:5432`, or `5433` if you set
+`DB_HOST_PORT=5433`.
+
+One row per day, sorted by date: `ts, region, wind_speed, temperature, humidity, n_points,
+generation_mu, capacity_mw, capacity_factor`. Weather is the equal-weight mean of the 3 wind-belt
+points. `generation_mu` is NaN on the 22 missing days (never filled). `capacity_*` are NaN until
+yearly capacity data is loaded; until then the target is `generation_mu`. Lags and day-of-year
+terms are **not** included, so build them in the model code after the time split. Pressure is
+deliberately not exposed (rule 2).
+
+Check it works: `pytest tests/test_features.py` (skips if the database is empty).
+
 ## Output for the model team
 
 - `data/golden/tn_daily_golden.csv`: one row per day 2020-05-28 → 2025-04-27, exported from `mv_daily_features`.
