@@ -1,0 +1,13 @@
+fold,horizon_days,rf,xgb
+fold_2022,0,"{'max_depth': 6, 'max_features': 1.0, 'min_samples_leaf': 3}","{'learning_rate': 0.03, 'max_depth': 4, 'min_child_weight': 10}"
+fold_2022,1,"{'max_depth': 12, 'max_features': 0.5, 'min_samples_leaf': 3}","{'learning_rate': 0.03, 'max_depth': 4, 'min_child_weight': 10}"
+fold_2022,2,"{'max_depth': 6, 'max_features': 1.0, 'min_samples_leaf': 3}","{'learning_rate': 0.03, 'max_depth': 2, 'min_child_weight': 10}"
+fold_2022,3,"{'max_depth': 6, 'max_features': 1.0, 'min_samples_leaf': 3}","{'learning_rate': 0.03, 'max_depth': 4, 'min_child_weight': 3}"
+fold_2023,0,"{'max_depth': 6, 'max_features': 1.0, 'min_samples_leaf': 3}","{'learning_rate': 0.03, 'max_depth': 2, 'min_child_weight': 3}"
+fold_2023,1,"{'max_depth': 12, 'max_features': 0.5, 'min_samples_leaf': 3}","{'learning_rate': 0.03, 'max_depth': 2, 'min_child_weight': 3}"
+fold_2023,2,"{'max_depth': 12, 'max_features': 0.5, 'min_samples_leaf': 3}","{'learning_rate': 0.03, 'max_depth': 4, 'min_child_weight': 10}"
+fold_2023,3,"{'max_depth': 12, 'max_features': 0.5, 'min_samples_leaf': 3}","{'learning_rate': 0.03, 'max_depth': 2, 'min_child_weight': 3}"
+holdout_2024+,0,"{'max_depth': 6, 'max_features': 1.0, 'min_samples_leaf': 3}","{'learning_rate': 0.03, 'max_depth': 4, 'min_child_weight': 10}"
+holdout_2024+,1,"{'max_depth': 12, 'max_features': 1.0, 'min_samples_leaf': 3}","{'learning_rate': 0.03, 'max_depth': 2, 'min_child_weight': 3}"
+holdout_2024+,2,"{'max_depth': 6, 'max_features': 1.0, 'min_samples_leaf': 3}","{'learning_rate': 0.03, 'max_depth': 2, 'min_child_weight': 3}"
+holdout_2024+,3,"{'max_depth': 6, 'max_features': 1.0, 'min_samples_leaf': 3}","{'learning_rate': 0.03, 'max_depth': 4, 'min_child_weight': 10}"
