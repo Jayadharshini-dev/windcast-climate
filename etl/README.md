@@ -48,9 +48,11 @@ Run from the repo root so `etl` is importable. The connection comes from `DATABA
 (see `etl/db.py`); with the default docker-compose it is `localhost:5432`, or `5433` if you set
 `DB_HOST_PORT=5433`.
 
-One row per day, sorted by date: `ts, region, wind_speed, temperature, humidity, n_points,
+One row per day, sorted by date, 2020-05-01 → 2025-04-30 (1,826 rows): `ts, region, wind_speed, temperature, humidity, n_points,
 generation_mu, capacity_mw, capacity_factor`. Weather is the equal-weight mean of the 3 wind-belt
-points. `generation_mu` is NaN on the 22 missing days (never filled). `capacity_*` are NaN until
+points. `generation_mu` is NaN on 52 days and never filled: 22 missing days inside the CEA span plus the 30
+weather-only margin days around it (kept for lag features). `read_features(require_generation=True)`
+returns the 1,774 rows with a value. `capacity_*` are NaN until
 yearly capacity data is loaded; until then the target is `generation_mu`. Lags and day-of-year
 terms are **not** included, so build them in the model code after the time split. Pressure is
 deliberately not exposed (rule 2).

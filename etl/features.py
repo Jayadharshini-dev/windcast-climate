@@ -4,7 +4,10 @@
     df = read_features()                          # all days
     df = read_features(require_generation=True)   # only days with a generation value (training rows)
 
-Returns a pandas DataFrame, one row per day, sorted by date, with these columns:
+Returns a pandas DataFrame, one row per day, sorted by date, from 2020-05-01 to 2025-04-30 (1,826 rows: the
+weather range). Generation exists only for 2020-05-28 to 2025-04-27, so the 30 margin days around that span
+(kept for lag features) always have generation_mu = NaN. Use require_generation=True for training rows.
+Columns:
 
     ts              datetime64[ns]  the date (India calendar day)
     region          str             'Tamil Nadu'
@@ -12,7 +15,8 @@ Returns a pandas DataFrame, one row per day, sorted by date, with these columns:
     temperature     float  deg C, 2 m, mean of the 3 points
     humidity        float  % relative humidity, 2 m, mean of the 3 points
     n_points        int    how many of the 3 points had data that day (3 = complete)
-    generation_mu   float  million units per day; NaN = missing day (never filled)
+    generation_mu   float  million units per day; NaN = no value, never filled: 22 missing days inside the CEA
+                           span + the 30 weather-only margin days = 52 NaN rows (1,774 rows have a value)
     capacity_mw     float  NaN until yearly capacity data is loaded
     capacity_factor float  NaN until yearly capacity data is loaded
 
