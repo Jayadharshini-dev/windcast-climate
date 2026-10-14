@@ -18,6 +18,18 @@ safe, because rows are upserted, not duplicated.
 | `load_era5.py` | ERA5 hourly → daily means, 3 wind-belt points | `raw_weather_readings`, stations 2–4 |
 | `run_phase2.py` | both of the above, refreshes views, writes `data/golden/` | — |
 
+## One-command rebuild (gate G5)
+
+```bash
+docker compose up -d
+python -m etl.rebuild
+```
+
+Applies the migrations, loads `data/seed/*.csv` (the cleaned CEA and ERA5 daily values that `load_cea.py`
+and `load_era5.py` would produce), refreshes the views, loads `data/golden/nexgddp_monthly_means.csv`, and
+checks the result against `data/golden/tn_daily_golden.csv`. Needs no internet. `python -m etl.export_seed`
+rewrites the seed from the raw downloads. `python -m etl.benchmark_queries` writes `paper/benchmark_results.md`.
+
 ## Data decisions
 
 - **Missing CEA days → NULL rows**, never filled (20 days absent from the file).
@@ -62,6 +74,7 @@ Check it works: `pytest tests/test_features.py` (skips if the database is empty)
 ## Climate data: NEX-GDDP change factors (Phase 4)
 
 ```bash
+pip install -r requirements-fetch.txt                      # adds earthengine-api (needs Python 3.10+; not needed for --skip-fetch)
 earthengine authenticate                                   # once, opens a browser
 python -m etl.run_phase4 --ee-project YOUR_PROJECT_ID      # fetch from Google Earth Engine, load, export
 python -m etl.run_phase4 --skip-fetch                      # load the committed CSV only (no Google account needed)

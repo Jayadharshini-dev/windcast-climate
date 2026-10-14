@@ -109,7 +109,10 @@ def load_points() -> list[tuple[str, float, float]]:
 
 # ---------------------------------------------------------------- Earth Engine calls (need network + account)
 def init_ee(project: str):
-    import ee
+    try:
+        import ee
+    except ImportError as exc:
+        raise SystemExit("earthengine-api is not installed. Run: pip install -r requirements-fetch.txt (Python 3.10+)") from exc
     try:
         ee.Initialize(project=project)
     except Exception as exc:  # not authenticated, wrong project id, API not enabled
