@@ -35,10 +35,21 @@ def test_no_pressure_column(df):
     assert not any("pressure" in c for c in df.columns)  # rule 2
 
 
+CEA_FIRST, CEA_LAST = pd.Timestamp("2020-05-28"), pd.Timestamp("2025-04-27")
+
+
 def test_missing_generation_stays_nan_and_days_are_not_filled(df):
     span = pd.date_range(df["ts"].min(), df["ts"].max(), freq="D")
     assert len(df) == len(span)  # no day silently dropped
-    assert df["generation_mu"].isna().sum() == 22  # 20 absent from CEA + 2 all-zero reporting gaps
+
+    inside = df[(df["ts"] >= CEA_FIRST) & (df["ts"] <= CEA_LAST)]
+    assert len(inside) == 1796
+    assert inside["generation_mu"].isna().sum() == 22  # 20 absent from CEA + 2 all-zero reporting gaps
+
+    # weather margin days (before/after the CEA span, kept for lag features) have no generation by design
+    outside = df.drop(inside.index)
+    assert len(outside) == 30
+    assert outside["generation_mu"].isna().all()
 
 
 def test_require_generation_drops_only_nan_days(df):
