@@ -1,5 +1,9 @@
 psycopg[binary]==3.2.3
-pandas==2.2.3
+pandas==2.3.3
 requests==2.32.3
+numpy==2.0.2
+matplotlib==3.9.4
+scikit-learn==1.6.1
+xgboost==2.1.4
 pytest==8.3.4
 earthengine-api==1.7.48
