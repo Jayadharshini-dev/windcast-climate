@@ -1,7 +1,7 @@
 """Random Forest and XGBoost for Tamil Nadu daily wind generation, with walk-forward validation.
 
 Run from the repo root:  python -m models.trees
-Optional arguments:      python -m models.trees <golden_csv> <output_dir>
+Optional arguments:      python -m models.trees <csv_path> <output_dir>   (default: database, else golden CSV)
 
 Two families of model (both use only features that exist in ERA5 AND in the climate data: wind, temperature,
 humidity, plus calendar terms; pressure is never used):
@@ -37,6 +37,8 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 from xgboost import XGBRegressor
 
+from models.data import load_daily
+
 warnings.filterwarnings("ignore")
 SEED = 42
 TARGET = "generation_mu"
@@ -47,16 +49,15 @@ FOLDS = [  # (name, train_end, test_start, test_end)
     ("holdout_2024+", "2023-12-31", "2024-01-01", "2100-01-01"),
 ]
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DATA = Path(sys.argv[1]) if len(sys.argv) > 1 else REPO_ROOT / "data" / "golden" / "tn_daily_golden.csv"
-OUT = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(__file__).resolve().parent
+OUT = Path(__file__).resolve().parent
 
 RF_GRID = {"max_depth": [6, 12], "min_samples_leaf": [3, 10], "max_features": [0.5, 1.0]}
 XGB_GRID = {"max_depth": [2, 4], "learning_rate": [0.03, 0.1], "min_child_weight": [3, 10]}
 
 
 def load():
-    df = pd.read_csv(DATA, parse_dates=["ts"]).sort_values("ts").set_index("ts").asfreq("D")
-    return df
+    """Database view if reachable, else the golden CSV (see models/data.py). Optional argv[1] = a CSV path."""
+    return load_daily(csv_path=sys.argv[1] if len(sys.argv) > 1 and __name__ == "__main__" else None)
 
 
 def build(df, h):
@@ -105,9 +106,12 @@ def fit_weather_only(train_df, model="xgb"):
 
 
 def main():
+    global OUT
+    if len(sys.argv) > 2:
+        OUT = Path(sys.argv[2])
     np.random.seed(SEED)
     df = load()
-    print(f"Loaded {DATA.name}: {len(df)} days, {int(df[TARGET].notna().sum())} with generation "
+    print(f"Loaded {len(df)} days, {int(df[TARGET].notna().sum())} with generation "
           f"(missing days stay as gaps, never filled).\n")
     rows, preds, importances, chosen = [], [], [], []
 
