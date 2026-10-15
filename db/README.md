@@ -23,6 +23,7 @@ changes go in a new numbered file in `db/migrations/` and through a PR.
 | `init/02_schema.sql` | The 7 tables |
 | `init/03_seed_stations.sql` | The state record + 3 wind-belt sampling points (fixed IDs 1–4) |
 | `init/04_views.sql` | `mv_daily_features`, `mv_weekly_features` (what the model reads) |
+| `migrations/001_change_factors.sql` | Views `v_change_factors`, `v_change_factors_region` (delta-change factors from `climate_scenarios`). No table changes. Applied by `python -m etl.run_phase4` |
 
 ## Tables at a glance
 

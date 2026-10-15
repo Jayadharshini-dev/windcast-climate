@@ -59,6 +59,40 @@ deliberately not exposed (rule 2).
 
 Check it works: `pytest tests/test_features.py` (skips if the database is empty).
 
+## Climate data: NEX-GDDP change factors (Phase 4)
+
+```bash
+earthengine authenticate                                   # once, opens a browser
+python -m etl.run_phase4 --ee-project YOUR_PROJECT_ID      # fetch from Google Earth Engine, load, export
+python -m etl.run_phase4 --skip-fetch                      # load the committed CSV only (no Google account needed)
+```
+
+**One-time Earth Engine setup:** register at https://code.earthengine.google.com/register (free for
+non-commercial use), create or pick a Google Cloud project there, and use its project id above.
+
+| Script | Does |
+| --- | --- |
+| `fetch_nexgddp.py` | For each climate model, scenario window and calendar month, asks Earth Engine for the mean of the daily NEX-GDDP values (`sfcWind`, `tas`, `hurs`) at the 3 wind-belt points. Resumable. Writes `data/golden/nexgddp_monthly_means.csv` |
+| `load_nexgddp.py` | Validates, converts Kelvin to deg C, and upserts into `climate_scenarios` (12 monthly rows + 1 annual row with `month` NULL per model/window/point) |
+| `run_phase4.py` | Applies `db/migrations/*.sql`, runs both, exports `change_factors_region_monthly.csv` and `climate_load_report.md` |
+
+**Why Earth Engine:** the raw NEX-GDDP files are global maps, tens of GB per model for our windows.
+Earth Engine averages them on Google's servers and returns only a few numbers per request.
+
+**Design (agreed at G0):**
+- Baseline **1995–2014** (`historical`, label 2005); futures **2021–2040** (label 2030) and **2041–2060** (label 2050) under `ssp245` and `ssp585`.
+- **Monthly** change factors per climate model: wind = ratio future/baseline, temperature and humidity = additive. Each model is compared with its own baseline only.
+- Provisional ensemble of **10 models** (`MODELS` in `fetch_nexgddp.py`): chosen for institutional spread, **not** tested for skill over South India. The spread across models is the uncertainty range.
+- No pressure (not in NEX-GDDP, rule 2). No direct daily NEX-GDDP feed for now (revisit in week 2).
+- Annual rows are the plain mean of the 12 monthly means (months equally weighted).
+- NEX-GDDP can be masked on ocean/coastal cells. The fetch checks the 3 points first and stops with a clear message if one has no data.
+
+**What the model team reads:** the views `v_change_factors` (per point) and `v_change_factors_region`
+(state level: ratio/difference of the equal-weight point means, matching how `mv_daily_features` is built),
+or the CSV export. Humidity plus a positive delta can exceed 100%: clip to 0–100 after applying it.
+
+Tests: `pytest tests/test_nexgddp.py` (synthetic data, rolled back; Earth Engine calls themselves are not covered).
+
 ## Output for the model team
 
 - `data/golden/tn_daily_golden.csv`: one row per day 2020-05-28 → 2025-04-27, exported from `mv_daily_features`.
