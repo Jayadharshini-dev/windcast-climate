@@ -1,0 +1,3 @@
+model,baseline_mean_generation_mu,baseline_mean_generation_mu_jun_sep,baseline_share_days_out_of_range
+xgboost,32.63639831542969,66.62275695800781,0.05750273822562979
+linear,32.90260173324004,65.76650412917883,0.05750273822562979

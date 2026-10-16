@@ -1,7 +1,7 @@
 """Weather baselines for Tamil Nadu daily wind generation (horizons 1-3 days).
 
 Run from the repo root:  python -m models.baseline_weather
-Optional arguments:      python -m models.baseline_weather <golden_csv> <output_dir>
+Optional arguments:      python -m models.baseline_weather <csv_path> <output_dir>
 
 Models, for each horizon h (days ahead):
   persistence   : generation(t) predicted by generation(t-h)
@@ -24,6 +24,8 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
+from models.data import load_daily
+
 SEED = 42
 TRAIN_END = "2023-12-31"
 TEST_START = "2024-01-01"
@@ -31,14 +33,12 @@ HORIZONS = (1, 2, 3)
 TARGET = "generation_mu"
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DATA = Path(sys.argv[1]) if len(sys.argv) > 1 else REPO_ROOT / "data" / "golden" / "tn_daily_golden.csv"
-OUT = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(__file__).resolve().parent
+OUT = Path(sys.argv[2]) if len(sys.argv) > 2 and __name__ == "__main__" else Path(__file__).resolve().parent
 
 
 def load():
-    df = pd.read_csv(DATA, parse_dates=["ts"]).sort_values("ts")
-    df = df.set_index("ts").asfreq("D")  # explicit daily index; gaps stay NaN
-    return df
+    """Database view if reachable, else the golden CSV (see models/data.py). Optional argv[1] = a CSV path."""
+    return load_daily(csv_path=sys.argv[1] if len(sys.argv) > 1 else None)
 
 
 def build(df, h):
@@ -66,7 +66,7 @@ def main():
     df = load()
     n_all = len(df)
     n_target = int(df[TARGET].notna().sum())
-    print(f"Loaded {DATA.name}: {n_all} days ({df.index.min().date()} to {df.index.max().date()}), "
+    print(f"Loaded {n_all} days ({df.index.min().date()} to {df.index.max().date()}), "
           f"{n_target} with generation, {n_all - n_target} missing (kept as gaps, not filled).")
     both = df[["wind_speed", TARGET]].dropna()
     print(f"Same-day correlation wind vs generation: {both['wind_speed'].corr(both[TARGET]):.3f}\n")
