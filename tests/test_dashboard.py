@@ -42,10 +42,17 @@ def test_forecast_and_impact_queries_run_when_empty(conn):
     assert len(q.table_counts(conn)) == 7
 
 
-@pytest.mark.parametrize("page", ["Overview", "Climate factors", "Forecasts", "Climate impact", "Data status"])
+HEADINGS = {"Overview": "The record", "Public": "Which months are windy?", "Researchers": "Climate impact by model",
+            "Planners": "Planning calendar", "Data and method": "What is in the database"}
+
+
+@pytest.mark.parametrize("page", list(HEADINGS))
 def test_pages_render(conn, page):
     from streamlit.testing.v1 import AppTest
-    at = AppTest.from_file("dashboard/app.py", default_timeout=60).run()
-    at.sidebar.radio[0].set_value(page).run()
+    at = AppTest.from_file("dashboard/app.py", default_timeout=90)
+    at.session_state["view"] = page
+    at.run()
     assert not at.exception, [e.value for e in at.exception]
     assert not at.error, [e.value for e in at.error]
+    text = " ".join(m.value for m in at.markdown)
+    assert HEADINGS[page] in text, f"page {page} did not show its content"

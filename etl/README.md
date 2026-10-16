@@ -27,7 +27,7 @@ python -m etl.rebuild
 
 Applies the migrations, loads `data/seed/*.csv` (the cleaned CEA and ERA5 daily values that `load_cea.py`
 and `load_era5.py` would produce), refreshes the views, loads `data/golden/nexgddp_monthly_means.csv`, and
-checks the result against `data/golden/tn_daily_golden.csv`. Needs no internet. `python -m etl.export_seed`
+loads the modelling team's committed results (`etl/load_results.py`: holdout predictions into `forecast_runs` and `model_predictions`, `climate/climate_impact.csv` into `climate_impact`), and checks the result against `data/golden/tn_daily_golden.csv`. Needs no internet. `python -m etl.export_seed`
 rewrites the seed from the raw downloads. `python -m etl.benchmark_queries` writes `paper/benchmark_results.md`.
 
 ## Data decisions

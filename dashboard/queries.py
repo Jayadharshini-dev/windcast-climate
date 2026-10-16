@@ -134,3 +134,57 @@ def climate_impact(conn) -> pd.DataFrame:
            FROM climate_impact WHERE region = %s ORDER BY scenario, target_year, metric, climate_model""",
         (REGION,),
     )
+
+
+# ---------------------------------------------------------------- added for the audience views
+def stations(conn) -> pd.DataFrame:
+    df = _frame(conn, "SELECT station_id, name, latitude, longitude FROM stations WHERE kind = 'weather_point' ORDER BY 1")
+    return df.astype({"latitude": float, "longitude": float})
+
+
+def monthly_by_year(conn) -> pd.DataFrame:
+    """Mean generation and wind per calendar month in each year, for the planning calendar."""
+    df = _frame(
+        conn,
+        """SELECT extract(year FROM ts)::int AS year, extract(month FROM ts)::int AS month,
+                  avg(generation_mu) AS generation_mu, avg(wind_speed) AS wind_speed, count(generation_mu) AS n_days
+           FROM mv_daily_features WHERE region = %s GROUP BY 1, 2 ORDER BY 1, 2""",
+        (REGION,),
+    )
+    return df.astype({"generation_mu": float, "wind_speed": float})
+
+
+def forecast_skill(conn) -> pd.DataFrame:
+    """Error of every stored forecast run on its test days (days with an actual value)."""
+    df = _frame(
+        conn,
+        """SELECT r.run_id, r.model_version AS model, r.horizon_days, count(*) AS n_days,
+                  sqrt(avg(power(p.predicted_value - f.generation_mu, 2))) AS rmse,
+                  avg(abs(p.predicted_value - f.generation_mu)) AS mae
+           FROM forecast_runs r
+           JOIN model_predictions p USING (run_id)
+           JOIN mv_daily_features f ON f.ts = p.forecast_date AND f.region = %s
+           WHERE f.generation_mu IS NOT NULL
+           GROUP BY r.run_id, r.model_version, r.horizon_days ORDER BY r.horizon_days, rmse""",
+        (REGION,),
+    )
+    return df.astype({"rmse": float, "mae": float})
+
+
+def runs_available(conn) -> pd.DataFrame:
+    return _frame(
+        conn,
+        """SELECT r.run_id, r.model_version AS model, r.horizon_days
+           FROM forecast_runs r WHERE EXISTS (SELECT 1 FROM model_predictions p WHERE p.run_id = r.run_id)
+           ORDER BY r.horizon_days, r.model_version""",
+    )
+
+
+def change_factors_download(conn) -> pd.DataFrame:
+    return _frame(
+        conn,
+        """SELECT scenario, target_year, month, climate_model, wind_ratio, temp_delta_c, humidity_delta_pct
+           FROM v_change_factors_region WHERE region = %s
+           ORDER BY scenario, target_year, climate_model, month NULLS LAST""",
+        (REGION,),
+    )

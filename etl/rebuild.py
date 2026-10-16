@@ -4,7 +4,7 @@
     python -m etl.rebuild
 
 Steps: wait for the database -> apply migrations -> load the seed CSVs (CEA + ERA5) -> refresh
-views -> load the committed NEX-GDDP monthly means -> check the result against the committed
+views -> load the committed NEX-GDDP monthly means -> load the committed model results -> check the result against the committed
 golden file. Needs no internet and no accounts. Re-running is safe.
 """
 import sys
@@ -12,7 +12,7 @@ import time
 
 import pandas as pd
 
-from etl import load_nexgddp, load_seed, run_phase2, run_phase4
+from etl import load_nexgddp, load_results, load_seed, run_phase2, run_phase4
 from etl.db import ROOT, connect
 
 GOLDEN = ROOT / "data" / "golden" / "tn_daily_golden.csv"
@@ -52,16 +52,18 @@ def check_against_golden() -> str:
 
 
 def main() -> None:
-    print("1/5 waiting for the database ...")
+    print("1/6 waiting for the database ...")
     wait_for_db()
-    print("2/5 applying migrations ...")
+    print("2/6 applying migrations ...")
     run_phase4.apply_migrations()
-    print("3/5 loading seed data (CEA generation + ERA5 weather) ...")
+    print("3/6 loading seed data (CEA generation + ERA5 weather) ...")
     print("   ", load_seed.main())
     run_phase2.refresh_views()
-    print("4/5 loading NEX-GDDP climate change factors ...")
+    print("4/6 loading NEX-GDDP climate change factors ...")
     print("   ", load_nexgddp.main())
-    print("5/5 checking against the golden file ...")
+    print("5/6 loading committed model and climate-impact results ...")
+    print("   ", load_results.main())
+    print("6/6 checking against the golden file ...")
     print("   ", check_against_golden())
     print("Done. Database is ready.")
 

@@ -21,7 +21,7 @@ streamlit run dashboard/app.py             # opens the dashboard at http://local
 `python -m etl.rebuild` fills the database from the small CSV files committed in `data/seed/`
 (CEA generation, ERA5 weather) and `data/golden/` (NEX-GDDP climate means), then checks that the
 result matches `data/golden/tn_daily_golden.csv`. If it prints `Done. Database is ready.`, the
-database is correct. Run `pytest` afterwards to check everything (about 30 tests).
+database is correct. Run `pytest` afterwards to check everything (about 36 tests).
 
 If the database is on port 5433, put `DATABASE_URL=postgresql://windcast:windcast_dev@localhost:5433/windcast`
 in `.env`.
@@ -51,9 +51,17 @@ python -m etl.benchmark_queries                            # query timings -> pa
 
 ## Dashboard
 
-Five pages, all read-only against the database: **Overview** (generation and weather over time, by
-calendar month), **Climate factors** (every climate model's change in wind, temperature and humidity,
-with the model average), **Forecasts** (stored forecasts against actual generation), **Climate impact**
-(effect on generation, with the model range) and **Data status** (row counts, gaps, sources). Forecasts
-and Climate impact show an explanation until the model team has written results to `forecast_runs`,
-`model_predictions` and `climate_impact`.
+Five views, all read-only against the database, for three kinds of reader:
+
+| View | For | What it shows |
+| --- | --- | --- |
+| Overview | everyone | the seasonal wind curve, three plain answers (when it blows, how well we forecast, what climate may do) with how sure we are, the daily record |
+| Public | citizens, students, journalists | month picker, the 2030/2050 climate outlook in plain words, what the study does not tell you, where the weather comes from |
+| Researchers | academics, the team | every climate model's answer, wind versus temperature drivers, monthly change factors, forecast skill tables, CSV downloads |
+| Planners | grid and energy officials | forecast against actual with an error band, seasonal planning calendar, scenario risk ranges, one-page summary download |
+| Data and method | everyone | data quality, sources, method in four lines, limits |
+
+`python -m etl.rebuild` also loads the committed model results (`models/trees_holdout_predictions.csv`) and climate
+impact results (`climate/climate_impact.csv`) into `forecast_runs`, `model_predictions` and `climate_impact`, so every
+view has data on a fresh clone. The forecasts shown are back-tests on 2024 onward, not live forecasts.
+The look is a light theme pinned in `.streamlit/config.toml`; styling is in `dashboard/theme.py`.
