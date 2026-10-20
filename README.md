@@ -14,17 +14,28 @@ cp .env.example .env                       # once; if port 5432 is busy, add DB_
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 docker compose up -d                       # starts the database and creates the tables
-python -m etl.rebuild                      # loads the committed data and checks it (about 10 seconds)
+python -m etl.run_all                      # builds the whole database and checks it (about 10 seconds)
 streamlit run dashboard/app.py             # opens the dashboard at http://localhost:8501
 ```
 
-`python -m etl.rebuild` fills the database from the small CSV files committed in `data/seed/`
+`python -m etl.run_all` (which runs `etl.rebuild`) fills the database from the small CSV files committed in `data/seed/`
 (CEA generation, ERA5 weather) and `data/golden/` (NEX-GDDP climate means), then checks that the
 result matches `data/golden/tn_daily_golden.csv`. If it prints `Done. Database is ready.`, the
 database is correct. Run `pytest` afterwards to check everything (about 36 tests).
 
 If the database is on port 5433, put `DATABASE_URL=postgresql://windcast:windcast_dev@localhost:5433/windcast`
 in `.env`.
+
+### The full pipeline, end to end
+
+```
+data/seed + data/golden  ->  database  ->  models (read the database)  ->  climate analysis  ->  database  ->  dashboard
+```
+
+`python -m etl.run_all --retrain` (about 5 minutes) does all of it: rebuilds the database, trains and validates the
+forecast models on data read from the database, applies the 10 climate models' change factors, writes the results back
+into `forecast_runs`, `model_predictions` and `climate_impact`, and the dashboard reads them. The models are seeded, so the
+numbers reproduce the committed files in `models/` and `climate/` to within rounding (RMSE within 0.02 MU/day).
 
 ## Folders
 

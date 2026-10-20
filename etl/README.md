@@ -20,6 +20,8 @@ safe, because rows are upserted, not duplicated.
 
 ## One-command rebuild (gate G5)
 
+`python -m etl.run_all` runs the rebuild below; add `--retrain` to also retrain the models and redo the climate analysis (about 5 minutes).
+
 ```bash
 docker compose up -d
 python -m etl.rebuild
