@@ -1,0 +1,10 @@
+query,used_for,runs,median_ms,p95_ms,min_ms,max_ms
+full daily feature table (materialized view),"model reads all 1,826 days",30,5.39,7.66,4.8,9.63
+"same table, computed live from raw tables",comparison with the view,30,6.93,8.83,6.0,9.8
+one-year slice of the view,dashboard date filter,30,2.48,3.07,2.18,3.9
+weekly features (materialized view),weekly aggregates,30,1.39,1.99,1.18,3.17
+monthly climatology,overview bar charts,30,1.53,1.93,1.28,2.37
+"raw weather, one station, one year",hypertable range scan,30,1.46,2.17,1.24,4.33
+"change factors: monthly, all models, one case",climate page chart,30,16.25,18.85,13.66,19.34
+"change factors: annual, all cases",climate page table,30,5.84,6.78,5.3,6.83
+table row counts,status page,30,1.13,1.72,0.99,2.38

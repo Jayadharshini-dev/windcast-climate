@@ -1,0 +1,5 @@
+# Only needed to re-download the NEX-GDDP climate data from Google Earth Engine (etl/fetch_nexgddp.py).
+# Everything else, including `python -m etl.rebuild`, works with requirements.txt alone.
+# earthengine-api needs Python 3.10 or newer.
+-r requirements.txt
+earthengine-api==1.7.48
