@@ -1,0 +1,7 @@
+date,capacity_mw,basis
+2020-03-31,9304.33,reported: operational Tamil Nadu wind capacity 31 March 2020 (indianwindpower.com year-wise table to March 2023)
+2021-03-31,9608.03,reported: 2020 value + 303.7 MW added in 2020-21
+2022-03-31,9866.33,reported: + 258.3 MW added in 2021-22
+2023-03-31,10017.15,reported: total operational 31 March 2023
+2024-03-31,10255.0,ASSUMPTION: + 237.6 MW (mean addition of 2020-21 to 2022-23); replace with the reported figure
+2025-03-31,10492.6,ASSUMPTION: + 237.6 MW; replace with the reported figure
