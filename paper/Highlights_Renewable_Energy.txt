@@ -1,0 +1,7 @@
+Highlights (each at most 85 characters including spaces)
+
+- Daily wind forecasts from climate-compatible weather beat persistence and climatology
+- One-day skill over persistence is lost at about 16–18% wind-speed error
+- Learning models flag 17–65% of real ramps; persistence flags none
+- Mean generation change to 2050 spans zero across ten CMIP6 models
+- Ramp frequency is stable; low-generation days depend on the climate model

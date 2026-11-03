@@ -8,3 +8,4 @@ data/raw/
 *.joblib
 *.parquet
 pgdata/
+data/raw/

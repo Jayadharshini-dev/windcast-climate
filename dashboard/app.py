@@ -17,6 +17,7 @@ import pandas as pd
 import streamlit as st
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+from dashboard import extremes  # noqa: E402
 from dashboard import queries as q  # noqa: E402
 from dashboard import theme  # noqa: E402
 from dashboard.theme import BLUE, GRAY, ORANGE  # noqa: E402
@@ -307,6 +308,8 @@ def view_researchers():
         st.dataframe(t[["Horizon", "Model", "n_days", "rmse", "mae", "skill_pct"]].rename(columns={"n_days": "Test days", "rmse": "RMSE", "mae": "MAE", "skill_pct": "Skill vs persistence (%)"})
                      .style.format({"RMSE": "{:.2f}", "MAE": "{:.2f}", "Skill vs persistence (%)": "{:.0f}"}), hide_index=True, use_container_width=True)
         st.caption("Test period: 2024 onward, trained on earlier years only. Skill = 1 minus (model error divided by the error of repeating the last known day).")
+
+    extremes.render(st, alt, show, empty, BLUE, GRAY)
 
     st.markdown("## Download the data")
     d1, d2, d3, d4 = st.columns(4)

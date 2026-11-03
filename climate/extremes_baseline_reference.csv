@@ -1,0 +1,2 @@
+model,ramp_threshold_mu,low_threshold_mu,high_threshold_mu,n_days,ramp_day_share_pct,up_ramp_day_share_pct,down_ramp_day_share_pct,low_day_share_pct,high_day_share_pct,longest_low_spell_days,mean_low_spell_days,spells_of_5plus_low_days_per_year
+xgboost,17.39814567565918,4.055456638336182,85.48683166503906,1826,10.027397260273972,4.767123287671233,5.260273972602739,10.021905805038335,10.021905805038335,10.0,2.3164556962025316,1.4001916757940853

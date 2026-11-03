@@ -56,3 +56,12 @@ def test_pages_render(conn, page):
     assert not at.error, [e.value for e in at.error]
     text = " ".join(m.value for m in at.markdown)
     assert HEADINGS[page] in text, f"page {page} did not show its content"
+
+
+def test_researchers_page_has_extremes_section(conn):
+    from streamlit.testing.v1 import AppTest
+    at = AppTest.from_file("dashboard/app.py", default_timeout=90)
+    at.session_state["view"] = "Researchers"
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert "Sudden changes and extreme days" in " ".join(m.value for m in at.markdown)

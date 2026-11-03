@@ -11,6 +11,7 @@ against ERA5. Daily values fix both:
 Run from the repo root, after `earthengine authenticate` (needs a Google Cloud project registered for Earth Engine):
     python -m etl.fetch_nexgddp_daily --ee-project YOUR_PROJECT --plan validation     # 10 models x 6 years = 60 calls
     python -m etl.fetch_nexgddp_daily --ee-project YOUR_PROJECT --plan variability    # 4 models x 40 years = 160 calls
+    python -m etl.fetch_nexgddp_daily --ee-project YOUR_PROJECT --plan variability_all   # all 10 models: 240 more calls
     python -m etl.fetch_nexgddp_daily --ee-project YOUR_PROJECT --models MIROC6 --spec ssp585:2041-2060   # custom
 
 One call returns one model-scenario-year: about 365 days x 3 points. Files go to data/raw/nexgddp_daily/ (git-ignored:
@@ -33,6 +34,8 @@ FIELDS = ["date", "station", "sfcWind", "tas", "hurs"]
 PLANS = {
     "validation": (MODELS, "ssp245:2020-2025"),
     "variability": (["CMCC-ESM2", "EC-Earth3", "GFDL-ESM4", "MIROC6"], "historical:1995-2014,ssp585:2041-2060"),
+    # all ten models: files of the four above are skipped, so this fetches the other six (240 calls)
+    "variability_all": (MODELS, "historical:1995-2014,ssp585:2041-2060"),
 }
 
 

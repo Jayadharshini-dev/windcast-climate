@@ -3,9 +3,9 @@
 Run from the repo root:   python -m climate.capacity_check
 
 The target in the paper is generation (MU/day), not capacity factor, because yearly capacity was not available
-when the schema was frozen. Tamil Nadu's operational wind capacity grew by about 8% between March 2020 and March 2023
-(data/golden/tn_wind_capacity_mw.csv: reported values to March 2023, an ASSUMED constant addition afterwards - replace
-those two rows with reported figures). Fleet growth could be absorbed by the weather-only model as if it were weather.
+when the schema was frozen. Tamil Nadu's operational wind capacity grew by about 26% between March 2020 and March 2025
+(data/golden/tn_wind_capacity_mw.csv: reported values to March 2023 from IWPA, and for March 2024 and 2025 from the MNRE reply
+to Lok Sabha question 1630 of 29 July 2026). Fleet growth could be absorbed by the weather-only model as if it were weather.
 
 What this script does
   1. Linearly interpolates capacity by date and rescales generation to a fixed fleet:  g_adj(t) = g(t) * C_ref / C(t),

@@ -3,5 +3,5 @@ date,capacity_mw,basis
 2021-03-31,9608.03,reported: 2020 value + 303.7 MW added in 2020-21
 2022-03-31,9866.33,reported: + 258.3 MW added in 2021-22
 2023-03-31,10017.15,reported: total operational 31 March 2023
-2024-03-31,10255.0,ASSUMPTION: + 237.6 MW (mean addition of 2020-21 to 2022-23); replace with the reported figure
-2025-03-31,10492.6,ASSUMPTION: + 237.6 MW; replace with the reported figure
+2024-03-31,10603.52,reported: 2023 value + 586.37 MW added in 2023-24 (MNRE Lok Sabha reply 1630 of 29 July 2026 Annexure I); cross-check 10599.86 backed out from 12.27 GW on 30 June 2026
+2025-03-31,11739.89,reported: + 1136.37 MW added in 2024-25 (same source); cross-check 11736.23 backed out from 12.27 GW on 30 June 2026
